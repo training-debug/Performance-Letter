@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Performance Letter — VOLTR.</title>
+<meta name="description" content="The VOLTR Performance Letter. Training methodology, programming decisions, and the thinking behind the app. Every Monday.">
+<link rel="icon" type="image/jpeg" href="https://static.wixstatic.com/media/21cb00_8b1c2ce67e254e4a8f0ae5d8d2a182e4~mv2.jpg">
+<link rel="apple-touch-icon" href="https://static.wixstatic.com/media/21cb00_8b1c2ce67e254e4a8f0ae5d8d2a182e4~mv2.jpg">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --black: #000;
+    --white: #fff;
+    --grey-light: #f5f5f5;
+    --grey-mid: #999;
+    --grey-dark: #333;
+    --font: 'Outfit', sans-serif;
+    --mono: 'Space Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font);
+    font-weight: 300;
+    color: var(--black);
+    background: var(--white);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .page {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== NAV ===== */
+  .topnav {
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .topnav__brand {
+    font-weight: 200;
+    font-size: 13px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--black);
+    text-decoration: none;
+  }
+  .topnav__tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--grey-mid);
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    padding: 80px 32px 60px;
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  @media (max-width: 768px) {
+    .hero { padding: 56px 24px 40px; }
+  }
+  .hero__label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--grey-mid);
+    margin-bottom: 32px;
+  }
+  .hero__title {
+    font-weight: 200;
+    font-size: clamp(32px, 7vw, 48px);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: var(--black);
+    margin-bottom: 24px;
+  }
+  .hero__sub {
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--grey-dark);
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  /* ===== FORM ===== */
+  .form-section {
+    padding: 0 32px 64px;
+    max-width: 640px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  @media (max-width: 768px) {
+    .form-section { padding: 0 24px 48px; }
+  }
+  .form-row {
+    display: flex;
+    gap: 0;
+    border: 1px solid rgba(0,0,0,0.15);
+    transition: border-color 0.2s ease;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .form-row:focus-within {
+    border-color: var(--black);
+  }
+  .form-row input[type="email"] {
+    flex: 1;
+    padding: 16px 20px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--black);
+    font-family: var(--font);
+    font-weight: 300;
+    font-size: 15px;
+    letter-spacing: 0.3px;
+  }
+  .form-row input[type="email"]::placeholder {
+    color: var(--grey-mid);
+  }
+  .form-row button {
+    padding: 16px 28px;
+    background: var(--black);
+    border: none;
+    color: var(--white);
+    font-family: var(--font);
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+  }
+  .form-row button:hover {
+    background: var(--grey-dark);
+  }
+  .form-note {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--grey-mid);
+    letter-spacing: 0.3px;
+  }
+  @media (max-width: 480px) {
+    .form-row { flex-direction: column; }
+    .form-row button { padding: 18px 28px; }
+  }
+
+  /* ===== IMAGE BREAK ===== */
+  .image-break {
+    width: 100%;
+    height: 520px;
+    overflow: hidden;
+    position: relative;
+  }
+  .image-break img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%) contrast(1.05);
+  }
+  @media (max-width: 768px) {
+    .image-break { height: 360px; }
+  }
+
+  /* ===== TOPICS ===== */
+  .topics {
+    padding: 80px 32px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  @media (max-width: 768px) {
+    .topics { padding: 56px 24px; }
+  }
+  .topics__label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--grey-mid);
+    margin-bottom: 40px;
+  }
+  .topic {
+    padding: 24px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+  }
+  .topic:first-of-type {
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+  .topic__dash {
+    font-weight: 200;
+    font-size: 20px;
+    color: rgba(0,0,0,0.2);
+    flex-shrink: 0;
+  }
+  .topic__title {
+    font-weight: 300;
+    font-size: 18px;
+    line-height: 1.45;
+    color: var(--black);
+  }
+
+  /* ===== ABOUT ===== */
+  .about {
+    background: var(--grey-light);
+    padding: 80px 32px;
+  }
+  @media (max-width: 768px) {
+    .about { padding: 56px 24px; }
+  }
+  .about__inner {
+    max-width: 640px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 480px) {
+    .about__inner { grid-template-columns: 1fr; gap: 20px; }
+  }
+  .about__avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    filter: grayscale(100%);
+  }
+  .about__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .about__name {
+    font-weight: 400;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .about__role {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--grey-mid);
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .about__text {
+    font-weight: 300;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--grey-dark);
+  }
+
+  /* ===== BOTTOM CTA ===== */
+  .bottom-cta {
+    background: var(--black);
+    color: var(--white);
+    padding: 80px 32px;
+    text-align: center;
+  }
+  @media (max-width: 768px) {
+    .bottom-cta { padding: 56px 24px; }
+  }
+  .bottom-cta__title {
+    font-weight: 200;
+    font-size: clamp(24px, 5vw, 36px);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .bottom-cta__sub {
+    font-weight: 300;
+    font-size: 16px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.6;
+    margin-bottom: 36px;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .bottom-cta .form-row {
+    border-color: rgba(255,255,255,0.25);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .bottom-cta .form-row:focus-within {
+    border-color: rgba(255,255,255,0.6);
+  }
+  .bottom-cta .form-row input[type="email"] {
+    color: var(--white);
+  }
+  .bottom-cta .form-row input[type="email"]::placeholder {
+    color: rgba(255,255,255,0.35);
+  }
+  .bottom-cta .form-row button {
+    background: var(--white);
+    color: var(--black);
+  }
+  .bottom-cta .form-row button:hover {
+    background: rgba(255,255,255,0.85);
+  }
+  .bottom-cta .form-note {
+    color: rgba(255,255,255,0.3);
+  }
+
+  /* ===== APP BRIDGE ===== */
+  .app-bridge {
+    margin-top: 56px;
+    padding-top: 40px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .app-bridge__label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 16px;
+  }
+  .app-bridge__text {
+    font-weight: 300;
+    font-size: 16px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .app-bridge__link {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--white);
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    transition: border-color 0.2s ease;
+  }
+  .app-bridge__link:hover {
+    border-color: var(--white);
+  }
+
+  /* ===== SUCCESS STATE ===== */
+  .success {
+    display: none;
+    text-align: center;
+    padding: 16px 0;
+  }
+  .success.is-visible {
+    display: block;
+  }
+  .success__check {
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 18px;
+    color: var(--black);
+  }
+  .success__title {
+    font-weight: 300;
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: var(--black);
+  }
+  .success__text {
+    font-size: 15px;
+    color: var(--grey-mid);
+    line-height: 1.6;
+  }
+  .bottom-cta .success__check {
+    border-color: rgba(255,255,255,0.3);
+    color: var(--white);
+  }
+  .bottom-cta .success__title {
+    color: var(--white);
+  }
+  .bottom-cta .success__text {
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    padding: 40px 32px;
+    text-align: center;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    background: var(--white);
+  }
+  .footer__links {
+    font-size: 12px;
+    color: var(--grey-mid);
+    letter-spacing: 1px;
+  }
+  .footer__links a {
+    color: var(--grey-mid);
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.2s ease;
+  }
+  .footer__links a:hover {
+    color: var(--black);
+  }
+  .footer__copy {
+    margin-top: 16px;
+    font-size: 11px;
+    color: rgba(0,0,0,0.2);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <nav class="topnav">
+    <a href="index.html" class="topnav__brand">VOLTR.</a>
+    <span class="topnav__tag">The Performance Letter</span>
+  </nav>
+
+  <div class="hero">
+    <div class="hero__label">Every Monday</div>
+    <h1 class="hero__title">What I tell my athletes<br>before I post it.</h1>
+    <p class="hero__sub">Training methodology, programming decisions, and the thinking behind VOLTR. One email per week, from Lukas.</p>
+  </div>
+
+  <div class="form-section">
+    <div id="formTop">
+      <form action="https://app.convertkit.com/forms/FORM_ID_HIER/subscriptions" method="post" class="nl-form" data-form="top">
+        <div class="form-row">
+          <input type="email" name="email_address" placeholder="Your email" required>
+          <button type="submit">Subscribe</button>
+        </div>
+      </form>
+      <div class="form-note">Unsubscribe anytime. Your data stays yours.</div>
+    </div>
+    <div class="success" id="successTop">
+      <div class="success__check">&#10003;</div>
+      <div class="success__title">Check your inbox.</div>
+      <div class="success__text">Your first email is on the way.</div>
+    </div>
+  </div>
+
+  <div class="image-break">
+    <img src="https://static.wixstatic.com/media/21cb00_65a61c8f9036420e83fec00172359a0b~mv2.jpg" alt="">
+  </div>
+
+  <div class="topics">
+    <div class="topics__label">Topics you'll find inside</div>
+
+    <div class="topic">
+      <span class="topic__dash">/</span>
+      <div class="topic__title">Why 90% of training plans have too much volume for your actual life</div>
+    </div>
+
+    <div class="topic">
+      <span class="topic__dash">/</span>
+      <div class="topic__title">What happens when you skip a week and how to come back</div>
+    </div>
+
+    <div class="topic">
+      <span class="topic__dash">/</span>
+      <div class="topic__title">You're not undisciplined. You're tired. The difference matters.</div>
+    </div>
+
+    <div class="topic">
+      <span class="topic__dash">/</span>
+      <div class="topic__title">What night shifts have to do with training plan design</div>
+    </div>
+
+    <div class="topic">
+      <span class="topic__dash">/</span>
+      <div class="topic__title">The cost of skipping and when skipping is the smarter move</div>
+    </div>
+  </div>
+
+  <div class="about">
+    <div class="about__inner">
+      <div class="about__avatar">
+        <img src="https://static.wixstatic.com/media/21cb00_8b1c2ce67e254e4a8f0ae5d8d2a182e4~mv2.jpg" alt="Lukas">
+      </div>
+      <div>
+        <div class="about__name">Lukas Plassnig</div>
+        <div class="about__role">Coach / VOLTR Founder</div>
+        <p class="about__text">I write the Performance Letter myself. Every week. It covers what I notice coaching athletes, training decisions I make, and mistakes I see in programs. If you want to understand why something works and not just what to do, this is for you.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-cta">
+    <h2 class="bottom-cta__title">The thinking behind<br>the training.</h2>
+    <p class="bottom-cta__sub">The Performance Letter covers the methodology.<br>The app puts it into practice.</p>
+    <div id="formBottom">
+      <form action="https://app.convertkit.com/forms/FORM_ID_HIER/subscriptions" method="post" class="nl-form" data-form="bottom">
+        <div class="form-row">
+          <input type="email" name="email_address" placeholder="Your email" required>
+          <button type="submit">Subscribe</button>
+        </div>
+      </form>
+      <div class="form-note">Unsubscribe anytime. Your data stays yours.</div>
+    </div>
+    <div class="success" id="successBottom">
+      <div class="success__check">&#10003;</div>
+      <div class="success__title">Check your inbox.</div>
+      <div class="success__text">Your first email is on the way.</div>
+    </div>
+
+    <div class="app-bridge">
+      <div class="app-bridge__label">Ready to train?</div>
+      <p class="app-bridge__text">Four structured programs. RPE-based progression.<br>Built for people with real schedules.</p>
+      <a href="index.html" class="app-bridge__link">Start 7-Day Trial</a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer__links">
+      <a href="index.html">voltr.at</a>
+      <a href="https://instagram.com/voltr.training" target="_blank">@voltr.training</a>
+    </div>
+    <div class="footer__links" style="margin-top: 10px;">
+      <a href="datenschutz.html">Datenschutz</a>
+      <a href="impressum.html">Impressum</a>
+    </div>
+    <div class="footer__copy">&copy; 2026 Lukas Plassnig e.U.</div>
+  </div>
+
+</div>
+
+<script>
+  document.querySelectorAll('.nl-form').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var email = this.querySelector('input[type="email"]').value;
+      var action = this.getAttribute('action');
+      var formId = this.dataset.form;
+
+      fetch(action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email_address: email })
+      }).then(function() {
+        if (formId === 'top') {
+          document.getElementById('formTop').style.display = 'none';
+          document.getElementById('successTop').classList.add('is-visible');
+        } else {
+          document.getElementById('formBottom').style.display = 'none';
+          document.getElementById('successBottom').classList.add('is-visible');
+        }
+      }).catch(function() {
+        if (formId === 'top') {
+          document.getElementById('formTop').style.display = 'none';
+          document.getElementById('successTop').classList.add('is-visible');
+        } else {
+          document.getElementById('formBottom').style.display = 'none';
+          document.getElementById('successBottom').classList.add('is-visible');
+        }
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
